@@ -32,6 +32,14 @@
       font-weight: bold;
       color: green;
     }
+
+    label input[type="radio"] {
+      margin-right: 5px;
+    }
+
+    label {
+      margin-right: 15px;
+    }
   </style>
 </head>
 
@@ -40,6 +48,12 @@
 
   <h2>Add a Vector</h2>
   <input id="addName" placeholder="Name (e.g., vector1)">
+  <div>
+    <label>Type:</label><br>
+    <label><input type="radio" name="addType" value="image" checked> Image</label>
+    <label><input type="radio" name="addType" value="video"> Video</label>
+    <label><input type="radio" name="addType" value="text"> Text</label>
+  </div>
   <input id="addVec" placeholder="Vector (e.g., 1,0.5,0.3)">
   <button onclick="addVector()">Add Vector</button>
 
@@ -57,6 +71,7 @@
     <thead>
       <tr>
         <th>Name</th>
+        <th>Type</th>
         <th>Vector (values)</th>
       </tr>
     </thead>
@@ -69,6 +84,7 @@
       const name = document.getElementById("addName").value.trim();
       const vecInput = document.getElementById("addVec").value.trim();
       const vector = vecInput.split(',').map(Number);
+      const type = document.querySelector('input[name="addType"]:checked').value;
 
       if (!name || vector.some(isNaN))
       {
@@ -79,7 +95,7 @@
       const response = await fetch('/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, vector })
+        body: JSON.stringify({ name, type, vector })
       });
 
       if (response.ok)
@@ -147,8 +163,11 @@
         nameTd.textContent = v.name;
         tr.appendChild(nameTd);
 
+        const typeTd = document.createElement('td');
+        typeTd.textContent = v.type;
+        tr.appendChild(typeTd);
+
         const vecTd = document.createElement('td');
-        // Show vector values rounded to 3 decimals, joined by comma
         vecTd.textContent = v.vector.map(x => x.toFixed(3)).join(', ');
         tr.appendChild(vecTd);
 

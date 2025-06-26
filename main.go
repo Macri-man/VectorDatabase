@@ -23,28 +23,29 @@ func addVector(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if newVec.Type != "image" && newVec.Type != "video" && newVec.Type != "text" {
+		http.Error(w, "Invalid vector type. Must be 'image', 'video', or 'text'.", http.StatusBadRequest)
+		return
+	}
+
 	mu.Lock()
 	defer mu.Unlock()
 
-	// Load current vectors from file
 	existingVectors := LoadVectors(dataFile)
 
-	// Replace or append
 	updated := false
 	for i, existing := range existingVectors {
 		if existing.Name == newVec.Name {
-			existingVectors[i] = newVec // Overwrite
+			existingVectors[i] = newVec
 			updated = true
 			break
 		}
 	}
 	if !updated {
-		existingVectors = append(existingVectors, newVec) // Add new
+		existingVectors = append(existingVectors, newVec)
 	}
 
-	// Save without duplicates
 	SaveAllVectorsToFile(dataFile, existingVectors)
-
 	w.WriteHeader(http.StatusOK)
 }
 

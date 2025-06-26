@@ -1,17 +1,1 @@
-{
-  "name": "something",
-  "vector": [
-    1,
-    0,
-    8
-  ]
-}
-{
-  "name": "something else",
-  "vector": [
-    1,
-    0,
-    6
-  ]
-}{"name":"something","vector":[1,0,5]}
-{"name":"something else","vector":[1,0,8]}
+{"name":"something","vector":[1,0,1]}
