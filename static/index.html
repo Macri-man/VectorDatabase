@@ -78,7 +78,77 @@
     <tbody></tbody>
   </table>
 
+  <h2>3D Vector Visualization</h2>
+  <canvas id="vectorCanvas" style="width:100%; height:400px; border:1px solid #ccc;"></canvas>
 
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script>let scene, camera, renderer;
+
+    function init3DScene() {
+      const canvas = document.getElementById("vectorCanvas");
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xf0f0f0);
+
+      camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+      camera.position.set(5, 5, 10);
+      camera.lookAt(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ canvas: canvas });
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+      // Light
+      const light = new THREE.PointLight(0xffffff, 1);
+      light.position.set(10, 10, 10);
+      scene.add(light);
+
+      // ✅ Add axis helper (size = 5)
+      const axesHelper = new THREE.AxesHelper(5);
+      scene.add(axesHelper);
+
+      // ✅ Add grid helper (size = 10, divisions = 10)
+      const gridHelper = new THREE.GridHelper(10, 10);
+      gridHelper.rotation.x = Math.PI / 2; // optional: rotate grid to match your scene orientation
+      scene.add(gridHelper);
+
+      animate(); // Start the render loop
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+
+    function clearScene() {
+      while (scene.children.length > 0)
+      {
+        scene.remove(scene.children[ 0 ]);
+      }
+    }
+
+    function plotVectors3D(vectors) {
+      clearScene();
+
+      vectors.forEach(v => {
+        if (v.vector.length < 3) return; // Need at least 3D
+
+        const x = v.vector[ 0 ];
+        const y = v.vector[ 1 ];
+        const z = v.vector[ 2 ];
+
+        const geometry = new THREE.SphereGeometry(0.1, 16, 16);
+        const material = new THREE.MeshStandardMaterial({
+          color: v.type === "image" ? 0xff0000 : v.type === "video" ? 0x0000ff : 0x00aa00
+        });
+
+        const sphere = new THREE.Mesh(geometry, material);
+        sphere.position.set(x, y, z);
+        scene.add(sphere);
+      });
+    }
+    init3DScene();
+    plotVectors3D(vectors);
+  </script>
   <script>
     async function addVector() {
       const name = document.getElementById("addName").value.trim();
