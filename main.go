@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -54,6 +55,16 @@ func searchVector(w http.ResponseWriter, r *http.Request) {
 	EncodeVector(w, best)
 }
 
+func listAllVectors(w http.ResponseWriter, r *http.Request) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(vectors); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func main() {
 	dir, err := os.Getwd()
 	if err != nil {
@@ -65,6 +76,7 @@ func main() {
 
 	http.HandleFunc("/add", addVector)
 	http.HandleFunc("/search", searchVector)
+	http.HandleFunc("/all", listAllVectors)
 	http.Handle("/", http.FileServer(http.Dir(staticDir)))
 
 	fmt.Println("Server running at http://localhost:8080")

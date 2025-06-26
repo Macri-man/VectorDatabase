@@ -50,6 +50,20 @@
   <h2>Search Result</h2>
   <div id="result">No result yet.</div>
 
+  <h2>All Stored Vectors</h2>
+  <button onclick="fetchAllVectors()">Refresh List</button>
+  <table id="vectorsTable" border="1" cellpadding="5" cellspacing="0"
+    style="margin-top: 1rem; width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Vector (values)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+
   <script>
     async function addVector() {
       const name = document.getElementById("addName").value.trim();
@@ -103,6 +117,46 @@
         document.getElementById("result").innerText = "Error searching for vector.";
       }
     }
+    async function fetchAllVectors() {
+      const res = await fetch('/all');
+      if (!res.ok)
+      {
+        alert('Failed to fetch vectors');
+        return;
+      }
+      const vectors = await res.json();
+      const tbody = document.querySelector('#vectorsTable tbody');
+      tbody.innerHTML = ''; // clear old rows
+
+      if (vectors.length === 0)
+      {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 2;
+        td.style.textAlign = 'center';
+        td.textContent = 'No vectors stored yet.';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+
+      vectors.forEach(v => {
+        const tr = document.createElement('tr');
+
+        const nameTd = document.createElement('td');
+        nameTd.textContent = v.name;
+        tr.appendChild(nameTd);
+
+        const vecTd = document.createElement('td');
+        // Show vector values rounded to 3 decimals, joined by comma
+        vecTd.textContent = v.vector.map(x => x.toFixed(3)).join(', ');
+        tr.appendChild(vecTd);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    fetchAllVectors(); // load on page load
   </script>
 </body>
 
