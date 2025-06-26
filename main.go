@@ -17,8 +17,8 @@ var (
 )
 
 func addVector(w http.ResponseWriter, r *http.Request) {
-	var v Vector
-	if err := DecodeVector(r.Body, &v); err != nil {
+	var newVec Vector
+	if err := DecodeVector(r.Body, &newVec); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -26,18 +26,25 @@ func addVector(w http.ResponseWriter, r *http.Request) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	// Overwrite if name exists
-	for i, existing := range vectors {
-		if existing.Name == v.Name {
-			vectors[i] = v
-			SaveAllVectorsToFile(dataFile, vectors)
-			w.WriteHeader(http.StatusOK)
-			return
+	// Load current vectors from file
+	existingVectors := LoadVectors(dataFile)
+
+	// Replace or append
+	updated := false
+	for i, existing := range existingVectors {
+		if existing.Name == newVec.Name {
+			existingVectors[i] = newVec // Overwrite
+			updated = true
+			break
 		}
 	}
+	if !updated {
+		existingVectors = append(existingVectors, newVec) // Add new
+	}
 
-	vectors = append(vectors, v)
-	AppendVectorToFile(dataFile, v)
+	// Save without duplicates
+	SaveAllVectorsToFile(dataFile, existingVectors)
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -56,8 +63,7 @@ func searchVector(w http.ResponseWriter, r *http.Request) {
 }
 
 func listAllVectors(w http.ResponseWriter, r *http.Request) {
-	mu.Lock()
-	defer mu.Unlock()
+	vectors := LoadVectors(dataFile)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(vectors); err != nil {

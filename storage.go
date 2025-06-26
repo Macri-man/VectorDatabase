@@ -53,8 +53,16 @@ func SaveAllVectorsToFile(filename string, vectors []Vector) {
 	}
 	defer f.Close()
 
+	// Use a map to track the last vector for each name
+	unique := make(map[string]Vector)
 	for _, v := range vectors {
-		data, _ := json.Marshal(v)
-		f.Write(append(data, '\n'))
+		unique[v.Name] = v // overwrite if already exists
+	}
+
+	enc := json.NewEncoder(f)
+	for _, v := range unique {
+		if err := enc.Encode(v); err != nil {
+			log.Println("Error encoding vector:", err)
+		}
 	}
 }
