@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -53,11 +55,17 @@ func searchVector(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	staticDir := filepath.Join(dir, "static")
+
 	vectors = LoadVectors(dataFile)
 
 	http.HandleFunc("/add", addVector)
 	http.HandleFunc("/search", searchVector)
-	http.Handle("/", http.FileServer(http.Dir("./static")))
+	http.Handle("/", http.FileServer(http.Dir(staticDir)))
 
 	fmt.Println("Server running at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
