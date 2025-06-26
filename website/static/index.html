@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Vector DB</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+    }
+
+    input {
+      padding: 0.5rem;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      padding: 0.5rem;
+      margin-bottom: 1.5rem;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    h2 {
+      margin-top: 2rem;
+    }
+
+    #result {
+      font-weight: bold;
+      color: green;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Vector Database</h1>
+
+  <h2>Add a Vector</h2>
+  <input id="addName" placeholder="Name (e.g., vector1)">
+  <input id="addVec" placeholder="Vector (e.g., 1,0.5,0.3)">
+  <button onclick="addVector()">Add Vector</button>
+
+  <h2>Search Vector</h2>
+  <input id="searchVec" placeholder="Vector (e.g., 1,0.5,0.3)">
+  <button onclick="searchVector()">Search</button>
+
+  <h2>Search Result</h2>
+  <div id="result">No result yet.</div>
+
+  <script>
+    async function addVector() {
+      const name = document.getElementById("addName").value.trim();
+      const vecInput = document.getElementById("addVec").value.trim();
+      const vector = vecInput.split(',').map(Number);
+
+      if (!name || vector.some(isNaN))
+      {
+        alert("Please provide a valid name and vector.");
+        return;
+      }
+
+      const response = await fetch('/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, vector })
+      });
+
+      if (response.ok)
+      {
+        alert("Vector added successfully!");
+      } else
+      {
+        alert("Failed to add vector.");
+      }
+    }
+
+    async function searchVector() {
+      const vecInput = document.getElementById("searchVec").value.trim();
+      const vector = vecInput.split(',').map(Number);
+
+      if (vector.some(isNaN))
+      {
+        alert("Please enter a valid search vector.");
+        return;
+      }
+
+      const response = await fetch('/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vector })
+      });
+
+      if (response.ok)
+      {
+        const result = await response.json();
+        document.getElementById("result").innerText =
+          `Best Match: ${result.name}, Vector: [${result.vector.join(", ")}]`;
+      } else
+      {
+        document.getElementById("result").innerText = "Error searching for vector.";
+      }
+    }
+  </script>
+</body>
+
+</html>
