@@ -8,7 +8,6 @@ import (
 
 type Vector struct {
 	Name   string    `json:"name"`
-	Type   string    `json:"type"`
 	Vector []float64 `json:"vector"`
 }
 

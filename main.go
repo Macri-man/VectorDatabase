@@ -23,11 +23,6 @@ func addVector(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if newVec.Type != "image" && newVec.Type != "video" && newVec.Type != "text" {
-		http.Error(w, "Invalid vector type. Must be 'image', 'video', or 'text'.", http.StatusBadRequest)
-		return
-	}
-
 	mu.Lock()
 	defer mu.Unlock()
 
