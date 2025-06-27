@@ -75,7 +75,6 @@
       const name = document.getElementById("addName").value.trim();
       const vecInput = document.getElementById("addVec").value.trim();
       const vector = vecInput.split(',').map(Number);
-      const type = document.querySelector('input[name="addType"]:checked').value;
 
       if (!name || vector.some(isNaN))
       {
@@ -86,7 +85,7 @@
       const response = await fetch('/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, type, vector })
+        body: JSON.stringify({ name, vector })
       });
 
       if (response.ok)
@@ -114,11 +113,24 @@
         body: JSON.stringify({ vector })
       });
 
+      if (!response.ok)
+      {
+        document.getElementById("result").innerText = "Error searching for vector.";
+        return;
+      }
+
+      const result = await response.json();
+
       if (response.ok)
       {
-        const result = await response.json();
-        document.getElementById("result").innerText =
-          `Best Match: ${result.name}, Vector: [${result.vector.join(", ")}]`;
+        if (result && result.name && Array.isArray(result.vector))
+        {
+          document.getElementById("result").innerText =
+            `Best Match: ${result.name}, Vector: [${result.vector.join(", ")}]`;
+        } else
+        {
+          document.getElementById("result").innerText = "No matching vector found.";
+        }
       } else
       {
         document.getElementById("result").innerText = "Error searching for vector.";

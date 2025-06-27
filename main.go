@@ -19,14 +19,18 @@ var (
 func addVector(w http.ResponseWriter, r *http.Request) {
 	var newVec Vector
 	if err := DecodeVector(r.Body, &newVec); err != nil {
+		log.Println("Decode error:", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	log.Println("Received vector:", newVec)
 
 	mu.Lock()
 	defer mu.Unlock()
 
 	existingVectors := LoadVectors(dataFile)
+	log.Printf("Loaded %d vectors from file", len(existingVectors))
 
 	updated := false
 	for i, existing := range existingVectors {
@@ -38,21 +42,38 @@ func addVector(w http.ResponseWriter, r *http.Request) {
 	}
 	if !updated {
 		existingVectors = append(existingVectors, newVec)
+		log.Println("Appended new vector")
+	} else {
+		log.Println("Updated existing vector")
 	}
 
 	SaveAllVectorsToFile(dataFile, existingVectors)
+	log.Println("Saved vectors to file")
+
 	w.WriteHeader(http.StatusOK)
 }
 
 func searchVector(w http.ResponseWriter, r *http.Request) {
 	var input Vector
 	if err := DecodeVector(r.Body, &input); err != nil {
+		log.Println("Failed to decode input vector:", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if len(input.Vector) == 0 {
+		http.Error(w, "Search vector is empty", http.StatusBadRequest)
 		return
 	}
 
 	mu.Lock()
 	defer mu.Unlock()
+
+	vectors := LoadVectors(dataFile)
+	if len(vectors) == 0 {
+		http.Error(w, "No vectors available for search", http.StatusNotFound)
+		return
+	}
 
 	best, _ := SearchBestMatch(vectors, input)
 	EncodeVector(w, best)

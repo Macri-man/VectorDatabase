@@ -35,14 +35,18 @@ func EncodeVector(w io.Writer, v Vector) error {
 	return json.NewEncoder(w).Encode(v)
 }
 
-func SearchBestMatch(vectors []Vector, input Vector) (Vector, float64) {
+func SearchBestMatch(all []Vector, input Vector) (Vector, float64) {
 	var best Vector
 	bestScore := -1.0
-	for _, v := range vectors {
-		score := CosineSimilarity(input.Vector, v.Vector)
+
+	for _, v := range all {
+		if len(v.Vector) != len(input.Vector) {
+			continue
+		}
+		score := CosineSimilarity(v.Vector, input.Vector)
 		if score > bestScore {
-			best = v
 			bestScore = score
+			best = v
 		}
 	}
 	return best, bestScore
